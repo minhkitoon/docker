@@ -1,0 +1,51 @@
+version: '3.3'
+services:
+  nginx:
+    image: nginx:1.17.4-alpine
+    ports:
+      - 8989:80
+    depends_on:
+      - php
+    volumes:
+      - .:/application
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+
+  php:
+    build: ./docker/php/
+    volumes:
+      - .:/application
+      - ./docker/php/custom.ini:/usr/local/etc/php/conf.d/custom.ini
+    depends_on:
+      - db
+    # environment:
+    #   - DB_PORT=3306
+    #   - DB_HOST=db
+    #   - DB_USERNAME=root
+    #   - DB_PASS=mypassword
+    #   - DB_NAME=testdb
+
+
+  db:
+    image: mysql:latest # use latest version of mysql
+    container_name: db # add a name for the container
+    restart: always
+    environment: # add default values, see docs for more info.
+      MYSQL_ROOT_PASSWORD: yourrootpassword
+      MYSQL_DATABASE: five_vai
+    volumes:
+      - ./docker/mysql:/var/lib/mysql
+    ports:
+      - "6033:3306"
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+        - "8080:80"
+    environment:
+        PMA_HOST: db
+        MYSQL_ROOT_PASSWORD: yourrootpassword
+    depends_on:
+        - db
+
+volumes:
+  db_data:
